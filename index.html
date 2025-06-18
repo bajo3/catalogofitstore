@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Catálogo | Tandi.Fit.Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <link rel="stylesheet" href="styles.css">
+
+
+</head>
+
+<body class="text-white font-sans" x-data="catalogo">
+    <header class="relative text-white text-center py-24 overflow-hidden">
+        <!-- Fondo animado tipo aurora -->
+        <div class="animate-aurora absolute inset-0 z-0">
+          <div class="animate-move-1"></div>
+          <div class="animate-move-2"></div>
+        </div>
+      
+        <!-- Contenido -->
+        <div class="relative z-10 px-4">
+          <h1 class="text-5xl md:text-6xl font-extrabold uppercase tracking-wide mb-4">
+            <span class="text-green-400">Tandil</span>.<span class="text-yellow-300">Fit</span>.<span class="text-green-400">Store</span>
+          </h1>
+          <p class="text-xl md:text-2xl text-gray-200 italic mb-8">Nutrición y energía para tu entrenamiento</p>
+      
+          <!-- Botones -->
+          <div class="flex justify-center gap-4 flex-wrap">
+            <a href="https://www.instagram.com/tandil.fit.store/" target="_blank"
+               class="px-6 py-3 bg-gradient-to-r from-pink-500 to-yellow-500 text-white rounded-full font-semibold shadow-lg transform hover:scale-105 transition">
+              Instagram
+            </a>
+            <a href="https://wa.me/5492494621182" target="_blank"
+               class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-full font-semibold shadow-lg transform hover:scale-105 transition">
+              WhatsApp
+            </a>
+          </div>
+        </div>
+      </header>
+      
+
+
+
+
+
+    <section class="px-4 py-4 max-w-4xl mx-auto flex flex-col md:flex-row gap-4 justify-between items-center">
+        <input type="text" placeholder="Buscar producto..." class="px-4 py-2 w-full md:w-1/2 rounded-lg text-black"
+            x-model="busqueda" />
+        <select class="px-4 py-2 rounded-lg text-black" x-model="filtroCategoria">
+            <option value="">Todas las categorías</option>
+            <template x-for="categoria in categorias" :key="categoria">
+                <option x-text="categoria"></option>
+            </template>
+        </select>
+    </section>
+
+    <main class="px-4 py-6 max-w-7xl mx-auto">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 justify-center">
+            <template x-for="(producto, index) in productosFiltrados" :key="index">
+                <div
+                    class="relative w-full max-w-[160px] bg-gray-900 rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition duration-300">
+                    <template x-if="producto.etiqueta">
+                        <span
+                            class="absolute top-1 left-1 bg-[var(--rose)] text-xs px-2 py-1 rounded text-white font-bold"
+                            x-text="producto.etiqueta"></span>
+                    </template>
+                    <div class="aspect-[9/16] w-full overflow-hidden rounded-lg bg-white shadow">
+                        <img :src="producto.imagen" :alt="producto.nombre" class="w-full h-full object-cover" />
+                    </div>
+                    <div class="p-2 bg-gradient-to-b from-[var(--green)] to-gray-900">
+                        <h2 class="text-sm font-bold text-[var(--gold)] leading-tight" x-text="producto.nombre"></h2>
+                        <p class="text-xs text-gray-300 mt-1 leading-snug line-clamp-3" x-text="producto.descripcion">
+                        </p>
+                        <p class="mt-1 font-semibold text-xs text-[var(--turquoise)]"
+                            x-text="`$${producto.precio.toLocaleString()}`"></p>
+                        <button @click="agregarAlCarrito(producto)"
+                            class="mt-2 block text-center bg-[var(--gold)] hover:bg-[var(--orange)] text-green py-1 text-xs rounded-md transition w-full transform hover:scale-105">
+                            Añadir al carrito
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </main>
+
+    <div x-show="mostrarModal" class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50"
+        @click.away="mostrarModal = false">
+        <div class="bg-gray-800 p-6 rounded-xl max-w-sm w-full">
+            <h2 class="text-xl font-bold text-[var(--gold)]" x-text="productoSeleccionado.nombre"></h2>
+            <img :src="productoSeleccionado.imagen" class="mt-2 mb-2 rounded">
+            <p class="text-sm text-gray-300" x-text="productoSeleccionado.descripcion"></p>
+            <p class="font-semibold text-[var(--turquoise)] mt-2"
+                x-text="`$${productoSeleccionado.precio.toLocaleString()}`">
+            </p>
+            <button @click="agregarAlCarrito(productoSeleccionado)"
+                class="mt-4 bg-[var(--gold)] hover:bg-[var(--orange)] w-full text-xs py-2 rounded">Añadir al
+                carrito</button>
+            <button @click="mostrarModal = false" class="mt-2 text-gray-400 text-xs hover:underline">Cerrar</button>
+        </div>
+    </div>
+
+    <section class="fixed bottom-4 right-4 bg-gray-800 border border-[var(--green)] rounded-xl p-4 shadow-xl z-40 w-72"
+        x-show="carrito.length">
+        <h3 class="text-sm font-bold text-[var(--green)] mb-2">🛒 Carrito</h3>
+        <ul class="text-xs text-white space-y-1 max-h-40 overflow-y-auto">
+            <template x-for="item in carrito" :key="item.nombre">
+                <li class="flex justify-between items-center">
+                    <span x-text="`${item.nombre} (x${item.cantidad})`"></span>
+                    <div class="flex gap-1">
+                        <button class="text-[var(--gold)] hover:text-white" @click="item.cantidad++">➕</button>
+                        <button class="text-[var(--rose)] hover:text-white"
+                            @click="item.cantidad > 1 ? item.cantidad-- : quitarDelCarrito(item)">➖</button>
+                        <button class="text-[var(--rose)] hover:text-white" @click="quitarDelCarrito(item)">🗑️</button>
+                    </div>
+                </li>
+            </template>
+        </ul>
+        <p class="text-xs text-right text-white font-semibold mt-2">
+            Total: $<span x-text="totalCarrito.toLocaleString()"></span>
+        </p>
+        <div class="mt-2 flex justify-between items-center">
+            <a :href="linkWhatsapp" target="_blank"
+                class="bg-[var(--turquoise)] hover:bg-[var(--orange)] text-white text-xs py-1 px-2 rounded">Enviar
+                pedido</a>
+            <button class="text-xs text-[var(--rose)] hover:underline" @click="vaciarCarrito">Vaciar</button>
+        </div>
+    </section>
+
+    <footer class="bg-black text-white py-12 mt-12 border-t-4 border-[var(--green)]">
+        <style>
+          .footer-glow-hover:hover,
+          .footer-glow-hover:focus {
+            color: var(--gold) !important;
+            text-shadow:
+              0 0 8px var(--gold),
+              0 0 16px var(--gold),
+              0 0 24px var(--gold);
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+            outline: none;
+          }
+      
+          .footer-icon-glow:hover svg path {
+            fill: var(--gold);
+            filter: drop-shadow(0 0 4px var(--gold));
+            transition: fill 0.3s ease, filter 0.3s ease;
+          }
+        </style>
+      
+        <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div class="text-center md:text-left max-w-md">
+            <h3 class="text-2xl font-extrabold text-[var(--green)] mb-3 tracking-wide">
+              Tandil.<span class="text-[var(--gold)]">Fit</span>.Store
+            </h3>
+            <p class="text-sm text-gray-400 leading-relaxed">
+              Nutrición y energía para tu entrenamiento.
+            </p>
+            <p class="text-xs text-gray-500 mt-2">
+              Catálogo actualizado al instante.
+            </p>
+          </div>
+      
+          <div class="flex flex-col items-center md:items-end gap-4">
+            <p class="text-sm font-semibold text-white mb-1">Contáctanos</p>
+      
+            <a href="https://wa.me/5492494621182" target="_blank" aria-label="Contactar por WhatsApp"
+              class="flex items-center gap-2 text-[var(--green)] transition-colors duration-300 text-sm font-medium footer-glow-hover footer-icon-glow">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                  d="M12.04 2c5.5 0 9.96 4.46 9.96 9.96 0 5.5-4.46 9.96-9.96 9.96-1.75 0-3.39-.44-4.83-1.21L2 22l1.29-5.03A9.91 9.91 0 012.08 12c0-5.5 4.46-9.96 9.96-9.96zm-.13 2.25A7.71 7.71 0 004.3 12c0 1.61.47 3.12 1.28 4.39l-.84 3.26 3.36-.88a7.68 7.68 0 003.81 1.01A7.71 7.71 0 1011.91 4.25zm4.05 9.37c-.07-.12-.27-.2-.56-.35-.29-.14-1.7-.84-1.96-.94-.26-.1-.45-.14-.64.14-.19.27-.74.94-.9 1.13-.16.19-.33.21-.62.07a5.66 5.66 0 01-1.67-1.02 6.26 6.26 0 01-1.16-1.46c-.12-.2 0-.45.15-.6.16-.16.37-.42.55-.63.18-.2.24-.34.36-.56.12-.22.06-.42-.03-.6-.1-.19-.64-1.54-.87-2.1-.23-.57-.47-.49-.64-.5l-.55-.01c-.2 0-.52.08-.79.36a3.34 3.34 0 00-1 2.48c0 1.44 1.04 2.84 1.19 3.04.15.2 2.05 3.12 5.13 4.26 3.08 1.14 3.08.76 3.64.71.56-.05 1.8-.74 2.06-1.46.25-.72.25-1.34.17-1.46z" />
+              </svg>
+              WhatsApp
+            </a>
+      
+            <a href="https://www.instagram.com/tandil.fit.store/" target="_blank" aria-label="Seguir en Instagram"
+              class="flex items-center gap-2 text-[var(--gold)] transition-colors duration-300 text-sm font-medium instagram footer-glow-hover footer-icon-glow">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                  d="M7.75 2A5.75 5.75 0 002 7.75v8.5A5.75 5.75 0 007.75 22h8.5A5.75 5.75 0 0022 16.25v-8.5A5.75 5.75 0 0016.25 2h-8.5zm0 1.5h8.5A4.25 4.25 0 0120.5 7.75v8.5a4.25 4.25 0 01-4.25 4.25h-8.5A4.25 4.25 0 013.5 16.25v-8.5A4.25 4.25 0 017.75 3.5zM12 7a5 5 0 100 10 5 5 0 000-10zm0 1.5a3.5 3.5 0 110 7 3.5 3.5 0 010-7zm4.75-.75a.75.75 0 100 1.5.75.75 0 000-1.5z" />
+              </svg>
+              Instagram
+            </a>
+          </div>
+        </div>
+      
+        <p class="text-xs text-center text-gray-500 mt-8 select-none">
+          © 2025 Tandi.Fit.Store — Todos los derechos reservados
+        </p>
+      </footer>
+      
+      
+
+
+
+    <script src="app.js"></script>
+</body>
+
+</html>

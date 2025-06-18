@@ -1,0 +1,108 @@
+:root {
+    --gold: #f0d000;
+    --green: #a3c93b;
+    --turquoise: #78b6bf;
+    --orange: #f58b00;
+    --rose: #d14d4d;
+}
+
+body {
+    background: radial-gradient(circle at top, #0d0d0d, #000);
+}
+
+span {
+    color: white !important;
+}
+
+.absolute {
+    color: red !important;
+}
+
+.instagram {
+    background: #833ab4;
+    background: linear-gradient(to right,
+            #833ab4, #fd1d1d, #fcb045);
+}
+
+
+header {
+    position: relative;
+    color: white;
+    text-align: center;
+    padding: 6rem 1rem;
+    overflow: hidden;
+  }
+
+  header::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(0,0,0,0), #000000);
+    z-index: 5;
+  }
+
+  
+  h1  {
+    display: inline-block;
+    animation: wave 1.5s infinite;
+  }
+  
+  @keyframes wave {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-10px); }
+  }
+
+  
+  
+
+  @keyframes moveAurora1 {
+    0% { transform: translateX(0) translateY(0); }
+    50% { transform: translateX(-15%) translateY(-10%); }
+    100% { transform: translateX(0) translateY(0); }
+  }
+  @keyframes moveAurora2 {
+    0% { transform: translateX(0) translateY(0); }
+    50% { transform: translateX(15%) translateY(10%); }
+    100% { transform: translateX(0) translateY(0); }
+  }
+  .animate-aurora {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .animate-move-1 {
+    position: absolute;
+    top: -20%;
+    left: -20%;
+    width: 140%;
+    height: 140%;
+    background: radial-gradient(circle at 30% 30%, rgba(0,255,0,0.7) 0%, transparent 70%);
+    filter: blur(70px);
+    animation: moveAurora1 15s ease-in-out infinite;
+    opacity: 0.7;
+    z-index: 0;
+  }
+  .animate-move-2 {
+    position: absolute;
+    top: -20%;
+    right: -20%;
+    width: 140%;
+    height: 140%;
+    background: radial-gradient(circle at 70% 40%, rgba(255,255,0,0.5) 0%, transparent 70%);
+    filter: blur(70px);
+    animation: moveAurora2 20s ease-in-out infinite;
+    opacity: 0.5;
+    z-index: 0;
+  }
+  .content {
+    position: relative;
+    z-index: 10;
+  }
+
+  
