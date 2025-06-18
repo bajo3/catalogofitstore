@@ -4,7 +4,9 @@ const catalogo = {
   mostrarModal: false,
   productoSeleccionado: null,
   carrito: [],
-  productos: [
+  productos: [],
+
+  productosLocal: [
     {
       nombre: 'Creatina x300g',
       descripcion: 'Mejora la fuerza, potencia y recuperación muscular.',
@@ -59,9 +61,98 @@ const catalogo = {
     }
   ],
 
+  async cargarDesdeCSV() {
+    try {
+      const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqoP9badwjDAnTha94cSdJ5JZfeRINT83Wq3SoSyXmmC-nvACGJzjtD_ZPQvTmUO3Cknd2U8iO9v-E/pub?gid=0&single=true&output=csv";
+      const res = await fetch(url);
+      const texto = await res.text();
+
+      const resultado = Papa.parse(texto, {
+        header: true,
+        skipEmptyLines: true,
+        transformHeader: h => h.trim().toLowerCase()
+      });
+
+      const productosValidos = resultado.data
+        .filter(p => p.nombre && p.precio && p.imagen)
+        .map(p => ({
+          nombre: p.nombre.trim(),
+          descripcion: p.descripcion?.trim() || "",
+          precio: parseInt(p.precio),
+          imagen: p.imagen.trim(),
+          categoria: p.categoria?.trim() || "Sin categoría",
+          etiqueta: p.etiqueta?.trim().toUpperCase() || ""  // Normalizo etiqueta aquí
+        }));
+
+      if (!productosValidos.length) throw new Error("CSV vacío o mal formateado");
+
+      this.productos = productosValidos;
+      console.log("Productos cargados:", this.productos);
+    } catch (error) {
+      console.warn("Error al cargar CSV, usando productos locales.", error);
+      this.productos = this.productosLocal;
+    }
+  },
+
+  // --- NUEVO: Funciones y variables para partículas ---
+  canvas: null,
+  ctx: null,
+  particles: [],
+
+  createParticles(num) {
+    for (let i = 0; i < num; i++) {
+      this.particles.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height,
+        radius: Math.random() * 2 + 1,
+        speedX: (Math.random() - 0.5) * 0.5,
+        speedY: (Math.random() - 0.5) * 0.5
+      });
+    }
+  },
+
+  animate() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.particles.forEach(p => {
+      p.x += p.speedX;
+      p.y += p.speedY;
+      if (p.x < 0) p.x = this.canvas.width;
+      if (p.x > this.canvas.width) p.x = 0;
+      if (p.y < 0) p.y = this.canvas.height;
+      if (p.y > this.canvas.height) p.y = 0;
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      this.ctx.fillStyle = 'rgba(134, 239, 172, 0.7)';
+      this.ctx.fill();
+    });
+    requestAnimationFrame(this.animate.bind(this));
+  },
+
+  iniciarParticulas() {
+    this.canvas = document.getElementById('particles');
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = 200; // Ajusta según la altura del header
+
+    this.particles = [];
+    this.createParticles(100);
+    this.animate();
+
+    // Para que el canvas se ajuste al cambiar tamaño ventana
+    window.addEventListener('resize', () => {
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = 200;
+    });
+  },
+  // --- FIN partículas ---
+
   init() {
     const guardado = localStorage.getItem('carrito');
     if (guardado) this.carrito = JSON.parse(guardado);
+
+    this.cargarDesdeCSV(); // Carga productos al iniciar
+    this.iniciarParticulas(); // Inicia la animación de partículas
   },
 
   get categorias() {
@@ -138,48 +229,5 @@ const catalogo = {
   }
 };
 
-  
-  const canvas = document.getElementById('particles');
-  const ctx = canvas.getContext('2d');
-  let particles = [];
-
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight / 2;
-  }
-
-  window.addEventListener('resize', resize);
-  resize();
-
-  function createParticles() {
-    for (let i = 0; i < 50; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 3 + 1,
-        speedX: Math.random() * 0.6 - 0.3,
-        speedY: Math.random() * 0.6 - 0.3
-      });
-    }
-  }
-
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach(p => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(163, 201, 59, 0.5)';
-      ctx.fill();
-      p.x += p.speedX;
-      p.y += p.speedY;
-      if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) {
-        p.x = Math.random() * canvas.width;
-        p.y = Math.random() * canvas.height;
-      }
-    });
-    requestAnimationFrame(animate);
-  }
-
-  createParticles();
-  animate();  
-  
+window.catalogo = catalogo;
+catalogo.init();

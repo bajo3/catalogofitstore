@@ -6,51 +6,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Catálogo | Tandi.Fit.Store</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://unpkg.com/alpinejs" defer></script>
+
 </head>
 
 <body class="body" x-data="catalogo">
-<header class="header">
-  <canvas id="particles" class="particles"></canvas>
+  <header class="header">
+    <canvas id="particles" class="particles"></canvas>
 
-  <div class="aurora">
-    <div class="move-1"></div>
-    <div class="move-2"></div>
-  </div>
+    <div class="aurora">
+      <div class="move-1"></div>
+      <div class="move-2"></div>
+    </div>
 
-  <div class="header-content">
-    <div class="logo-textual">
-      <div class="logo-row">
-        <div class="shaker-svg">
-          <svg viewBox="0 0 64 128" xmlns="http://www.w3.org/2000/svg">
-            <!-- Cuerpo botella -->
-            <rect x="16" y="32" width="32" height="80" rx="6" ry="6" fill="#86efac" />
-            <!-- Tapa -->
-            <rect x="12" y="20" width="40" height="16" rx="4" fill="#86efac" />
-            <rect x="24" y="10" width="16" height="10" rx="2" fill="#86efac" />
-            <!-- Rayo -->
-            <polygon points="34,40 26,68 34,68 28,88 42,60 34,60" fill="#fef9c3" />
-          </svg>
+    <div class="header-content">
+      <div class="logo-textual">
+        <div class="logo-row">
+          <div class="shaker-svg">
+            <svg viewBox="0 0 64 128" xmlns="http://www.w3.org/2000/svg">
+              <rect x="16" y="32" width="32" height="80" rx="6" ry="6" fill="#86efac" />
+              <rect x="12" y="20" width="40" height="16" rx="4" fill="#86efac" />
+              <rect x="24" y="10" width="16" height="10" rx="2" fill="#86efac" />
+              <polygon points="34,40 26,68 34,68 28,88 42,60 34,60" fill="#fef9c3" />
+            </svg>
+          </div>
+
+          <h1 class="brand-name">
+            <span class="brand-green">TANDIL</span>.<span class="brand-black">FIT</span>.<span
+              class="brand-green">STORE</span>
+            <span class="pill-icon">💊</span>
+          </h1>
         </div>
 
-        <h1 class="brand-name">
-          <span class="brand-green">TANDIL</span>.<span class="brand-black">FIT</span>.<span class="brand-green">STORE</span>
-          <span class="pill-icon">💊</span>
-        </h1>
+        <p class="tagline">Nutrición y energía para tu entrenamiento</p>
+        <div class="barbell-icon">🏋️‍♂️</div>
       </div>
 
-      <p class="tagline">Nutrición y energía para tu entrenamiento</p>
-      <div class="barbell-icon">🏋️‍♂️</div>
+      <div class="cta-buttons">
+        <a href="https://www.instagram.com/tandil.fit.store/" target="_blank" class="btn-instagram">Instagram</a>
+        <a href="https://wa.me/5492494621182" target="_blank" class="btn-whatsapp">WhatsApp</a>
+      </div>
     </div>
-
-    <div class="cta-buttons">
-      <a href="https://www.instagram.com/tandil.fit.store/" target="_blank" class="btn-instagram">Instagram</a>
-      <a href="https://wa.me/5492494621182" target="_blank" class="btn-whatsapp">WhatsApp</a>
-    </div>
-  </div>
-</header>
-
-
+  </header>
 
   <section class="filter-section">
     <input type="text" placeholder="Buscar producto..." class="search-input" x-model="busqueda" />
@@ -66,11 +65,16 @@
     <div class="grid-productos">
       <template x-for="(producto, index) in productosFiltrados" :key="index">
         <div class="card-producto">
-          <template x-if="producto.etiqueta">
-            <span class="badge-etiqueta" x-text="producto.etiqueta"></span>
-          </template>
-          <div class="img-container">
+          <div class="img-container relative">
             <img :src="producto.imagen" :alt="producto.nombre" class="img-producto" />
+            <span x-show="producto.etiqueta && producto.etiqueta.trim() !== ''" class="badge-etiqueta"
+              x-data="{ etiquetaLimpia: producto.etiqueta.trim().toUpperCase() }" :class="{
+    'bg-orange-500': etiquetaLimpia === 'OFERTA',
+    'bg-red-500': etiquetaLimpia === 'REBAJA',
+    'bg-green-500': etiquetaLimpia === 'NUEVO',
+    'bg-blue-500': etiquetaLimpia === 'PROMO',
+  }" x-text="etiquetaLimpia">
+            </span>
           </div>
           <div class="card-body">
             <h2 class="titulo-producto" x-text="producto.nombre"></h2>
@@ -127,7 +131,8 @@
       <div class="footer-contacto">
         <p class="footer-contact-title">Contáctanos</p>
         <a href="https://wa.me/5492494621182" target="_blank" class="footer-link-whatsapp">WhatsApp</a>
-        <a href="https://www.instagram.com/tandil.fit.store/" target="_blank" class="footer-link-instagram">Instagram</a>
+        <a href="https://www.instagram.com/tandil.fit.store/" target="_blank"
+          class="footer-link-instagram">Instagram</a>
       </div>
     </div>
     <p class="footer-copy">© 2025 Tandi.Fit.Store — Todos los derechos reservados</p>
