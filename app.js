@@ -94,58 +94,7 @@ const catalogo = {
     }
   },
 
-  // --- NUEVO: Funciones y variables para partículas ---
-  canvas: null,
-  ctx: null,
-  particles: [],
-
-  createParticles(num) {
-    for (let i = 0; i < num; i++) {
-      this.particles.push({
-        x: Math.random() * this.canvas.width,
-        y: Math.random() * this.canvas.height,
-        radius: Math.random() * 2 + 1,
-        speedX: (Math.random() - 0.5) * 0.5,
-        speedY: (Math.random() - 0.5) * 0.5
-      });
-    }
-  },
-
-  animate() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.particles.forEach(p => {
-      p.x += p.speedX;
-      p.y += p.speedY;
-      if (p.x < 0) p.x = this.canvas.width;
-      if (p.x > this.canvas.width) p.x = 0;
-      if (p.y < 0) p.y = this.canvas.height;
-      if (p.y > this.canvas.height) p.y = 0;
-      this.ctx.beginPath();
-      this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      this.ctx.fillStyle = 'rgba(134, 239, 172, 0.7)';
-      this.ctx.fill();
-    });
-    requestAnimationFrame(this.animate.bind(this));
-  },
-
-  iniciarParticulas() {
-    this.canvas = document.getElementById('particles');
-    if (!this.canvas) return;
-    this.ctx = this.canvas.getContext('2d');
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = 200; // Ajusta según la altura del header
-
-    this.particles = [];
-    this.createParticles(100);
-    this.animate();
-
-    // Para que el canvas se ajuste al cambiar tamaño ventana
-    window.addEventListener('resize', () => {
-      this.canvas.width = window.innerWidth;
-      this.canvas.height = 200;
-    });
-  },
-  // --- FIN partículas ---
+ 
 
   init() {
     const guardado = localStorage.getItem('carrito');
