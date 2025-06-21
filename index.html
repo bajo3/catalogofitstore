@@ -5,39 +5,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Catálogo | Tandi.Fit.Store</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
-
 </head>
 
-<body class="body" x-data="catalogo">
+<body x-data="catalogo" class="bg-white text-gray-900">
   <header class="header">
-
     <div class="header-content">
       <div class="logo-textual">
         <div class="logo-row">
           <div class="shaker-svg">
-            
+            <svg viewBox="0 0 64 128" xmlns="http://www.w3.org/2000/svg">
               <rect x="16" y="32" width="32" height="80" rx="6" ry="6" fill="#86efac" />
               <rect x="12" y="20" width="40" height="16" rx="4" fill="#86efac" />
               <rect x="24" y="10" width="16" height="10" rx="2" fill="#86efac" />
               <polygon points="34,40 26,68 34,68 28,88 42,60 34,60" fill="#fef9c3" />
             </svg>
           </div>
-
           <h1 class="brand-name">
             <span class="brand-green">TANDIL</span><span class="brand-black">FIT</span><span
               class="brand-green">STORE</span>
             <span class="pill-icon">💊</span>
           </h1>
         </div>
-
         <p class="tagline">Nutrición y energía para tu entrenamiento</p>
         <div class="barbell-icon">🏋️‍♂️</div>
       </div>
-
       <div class="cta-buttons">
         <a href="https://www.instagram.com/tandil.fit.store/" target="_blank" class="btn-instagram">Instagram</a>
         <a href="https://wa.me/5492494621182" target="_blank" class="btn-whatsapp">WhatsApp</a>
@@ -58,39 +53,70 @@
   <main class="catalogo">
     <div class="grid-productos">
       <template x-for="(producto, index) in productosFiltrados" :key="index">
-        <div class="card-producto">
+        <div class="card-producto" @click="seleccionarProducto(producto)">
           <div class="img-container relative">
-            <img :src="producto.imagen" :alt="producto.nombre" class="img-producto" />
-            <span x-show="producto.etiqueta && producto.etiqueta.trim() !== ''" class="badge-etiqueta"
-              x-data="{ etiquetaLimpia: producto.etiqueta.trim().toUpperCase() }" :class="{
-    'bg-orange-500': etiquetaLimpia === 'OFERTA',
-    'bg-red-500': etiquetaLimpia === 'REBAJA',
-    'bg-green-500': etiquetaLimpia === 'NUEVO',
-    'bg-blue-500': etiquetaLimpia === 'PROMO',
-  }" x-text="etiquetaLimpia">
-            </span>
+            <img :src="producto.imagenes[0]" :alt="producto.nombre" class="img-producto" />
+            <span x-show="producto.etiqueta" class="badge-etiqueta" :class="{
+                  'bg-orange-500': producto.etiqueta === 'OFERTA',
+                  'bg-red-500': producto.etiqueta === 'REBAJA',
+                  'bg-green-500': producto.etiqueta === 'NUEVO',
+                  'bg-blue-500': producto.etiqueta === 'PROMO',
+                }" x-text="producto.etiqueta"></span>
           </div>
           <div class="card-body">
             <h2 class="titulo-producto" x-text="producto.nombre"></h2>
             <p class="descripcion-producto" x-text="producto.descripcion"></p>
             <p class="precio-producto" x-text="`$${producto.precio.toLocaleString()}`"></p>
-            <button @click="agregarAlCarrito(producto)" class="btn-agregar">Añadir al carrito</button>
+            <button @click.stop="agregarAlCarrito(producto)" class="btn-agregar">Añadir al carrito</button>
           </div>
         </div>
       </template>
     </div>
   </main>
 
-  <div x-show="mostrarModal" class="modal" @click.away="mostrarModal = false" x-cloak>
+  <!-- MODAL con CARRUSEL -->
+  <div x-show="mostrarModal" class="modal" @click.away="cerrarModal()" x-cloak>
     <div class="modal-content">
-      <h2 class="modal-title" x-text="productoSeleccionado.nombre"></h2>
-      <img :src="productoSeleccionado.imagen" class="modal-img">
-      <p class="modal-descripcion" x-text="productoSeleccionado.descripcion"></p>
-      <p class="modal-precio" x-text="`$${productoSeleccionado.precio.toLocaleString()}`"></p>
-      <button @click="agregarAlCarrito(productoSeleccionado)" class="modal-btn-agregar">Añadir al carrito</button>
-      <button @click="mostrarModal = false" class="modal-btn-cerrar">Cerrar</button>
+
+      <!-- Contenido con scroll -->
+      <div class="modal-scrollable">
+        <h2 class="modal-title" x-text="productoSeleccionado.nombre"></h2>
+
+       <!-- Carrusel de Imágenes -->
+<div class="relative w-full max-w-[250px] mx-auto">
+  <img 
+    :src="productoSeleccionado.imagenes[imagenIndex]" 
+    class="modal-img cursor-zoom-in" 
+    @click="activarPantallaCompleta()" 
+    alt="Imagen producto"
+  />
+  <div class="absolute inset-0 flex justify-between items-center px-2 pointer-events-none">
+    <button 
+      @click.stop="anteriorImagen()" 
+      class="text-2xl text-gray-600 hover:text-black pointer-events-auto"
+      aria-label="Imagen anterior"
+    >←</button>
+    <button 
+      @click.stop="siguienteImagen()" 
+      class="text-2xl text-gray-600 hover:text-black pointer-events-auto"
+      aria-label="Imagen siguiente"
+    >→</button>
+  </div>
+</div>
+
+<p class="modal-descripcion" x-text="productoSeleccionado.descripcion"></p>
+<p class="modal-precio" x-text="`$${productoSeleccionado.precio.toLocaleString()}`"></p>
+
+
+      <!-- Botones fijos abajo -->
+      <div class="modal-botones">
+        <button @click="agregarAlCarrito(productoSeleccionado)" class="modal-btn-agregar">Añadir al carrito</button>
+        <button @click="cerrarModal()" class="modal-btn-cerrar">Cerrar</button>
+      </div>
+
     </div>
   </div>
+
 
   <section class="carrito" x-show="carrito.length" x-cloak>
     <h3 class="carrito-titulo">🛒 Carrito</h3>

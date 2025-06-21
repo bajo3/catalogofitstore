@@ -3,6 +3,7 @@ const catalogo = {
   filtroCategoria: '',
   mostrarModal: false,
   productoSeleccionado: null,
+  imagenIndex: 0,
   carrito: [],
   productos: [],
 
@@ -11,54 +12,25 @@ const catalogo = {
       nombre: 'Creatina x300g',
       descripcion: 'Mejora la fuerza, potencia y recuperación muscular.',
       precio: 29000,
-      imagen: '../Productos/Creatina.jpg',
+      imagenes: [
+        '../Productos/Creatina.jpg',
+        '../Productos/Nutricional_Creatina.jpg'
+      ],
       categoria: 'Creatina',
       etiqueta: 'NUEVO'
-    },
-    {
-      nombre: 'Proteína x908g',
-      descripcion: 'Aporta proteína de alta calidad para ganar masa muscular.',
-      precio: 39000,
-      imagen: '../Productos/Proteina.jpg',
-      categoria: 'Proteína'
     },
     {
       nombre: 'Colágeno Plus x360g',
       descripcion: 'Favorece articulaciones, piel y cabello.',
       precio: 20000,
-      imagen: '../Productos/Colageno.jpg',
+      imagenes: [
+        '../Productos/Colageno.jpg',
+        '../Productos/Nutricional_Colageno.jpg'
+      ],
       categoria: 'Colágeno',
       etiqueta: 'OFERTA'
-    },
-    {
-      nombre: 'ZMA x90 caps',
-      descripcion: 'Mejora el descanso y optimiza los niveles hormonales.',
-      precio: 15000,
-      imagen: '../Productos/ZMA.jpg',
-      categoria: 'Vitaminas'
-    },
-    {
-      nombre: 'Magnesio x500g',
-      descripcion: 'Contribuye al buen funcionamiento muscular.',
-      precio: 25000,
-      imagen: '../Productos/Magnesio.jpg',
-      categoria: 'Vitaminas'
-    },
-    {
-      nombre: 'Pump V8 x285g',
-      descripcion: 'Pre entreno con arginina, citrulina y cafeína.',
-      precio: 30000,
-      imagen: '../Productos/pumpv8.jpg',
-      categoria: 'Pre Entreno'
-    },
-    {
-      nombre: 'BCAA x270g',
-      descripcion: 'Aminoácidos esenciales para la recuperación.',
-      precio: 27000,
-      imagen: '../Productos/BCAA.jpg',
-      categoria: 'Aminoácidos',
-      etiqueta: 'OFERTA'
     }
+    // ... otros productos
   ],
 
   async cargarDesdeCSV() {
@@ -79,29 +51,49 @@ const catalogo = {
           nombre: p.nombre.trim(),
           descripcion: p.descripcion?.trim() || "",
           precio: parseInt(p.precio),
-          imagen: p.imagen.trim(),
+          imagenes: [p.imagen.trim(), ...(p.nutricional ? [p.nutricional.trim()] : [])],
           categoria: p.categoria?.trim() || "Sin categoría",
-          etiqueta: p.etiqueta?.trim().toUpperCase() || ""  // Normalizo etiqueta aquí
+          etiqueta: p.etiqueta?.trim().toUpperCase() || ""
         }));
 
       if (!productosValidos.length) throw new Error("CSV vacío o mal formateado");
 
       this.productos = productosValidos;
-      console.log("Productos cargados:", this.productos);
     } catch (error) {
       console.warn("Error al cargar CSV, usando productos locales.", error);
       this.productos = this.productosLocal;
     }
   },
 
- 
-
   init() {
     const guardado = localStorage.getItem('carrito');
     if (guardado) this.carrito = JSON.parse(guardado);
 
-    this.cargarDesdeCSV(); // Carga productos al iniciar
-    this.iniciarParticulas(); // Inicia la animación de partículas
+    this.cargarDesdeCSV();
+    this.iniciarParticulas?.();
+
+    // Agregar listeners para cerrar modal y controlar carrusel
+    document.addEventListener('click', (e) => {
+      if (e.target.matches('.modal-btn-cerrar')) {
+        this.cerrarModal();
+        this.render();
+      }
+      if (e.target.matches('.modal-btn-agregar')) {
+        if (this.productoSeleccionado) {
+          this.agregarAlCarrito(this.productoSeleccionado);
+          this.cerrarModal();
+          this.render();
+        }
+      }
+      if (e.target.matches('.modal-prev')) {
+        this.anteriorImagen();
+        this.renderModal();
+      }
+      if (e.target.matches('.modal-next')) {
+        this.siguienteImagen();
+        this.renderModal();
+      }
+    });
   },
 
   get categorias() {
@@ -122,12 +114,19 @@ const catalogo = {
 
   seleccionarProducto(producto) {
     this.productoSeleccionado = producto;
+    this.imagenIndex = 0;
     this.mostrarModal = true;
+    this.renderModal();
   },
 
-  cerrarModal() {
-    this.mostrarModal = false;
-    this.productoSeleccionado = null;
+  siguienteImagen() {
+    if (!this.productoSeleccionado?.imagenes?.length) return;
+    this.imagenIndex = (this.imagenIndex + 1) % this.productoSeleccionado.imagenes.length;
+  },
+
+  anteriorImagen() {
+    if (!this.productoSeleccionado?.imagenes?.length) return;
+    this.imagenIndex = (this.imagenIndex - 1 + this.productoSeleccionado.imagenes.length) % this.productoSeleccionado.imagenes.length;
   },
 
   agregarAlCarrito(producto) {
@@ -145,14 +144,6 @@ const catalogo = {
     this.guardarCarrito();
   },
 
-  actualizarCantidad(item, cantidad) {
-    const producto = this.carrito.find(p => p.nombre === item.nombre);
-    if (producto) {
-      producto.cantidad = Math.max(1, cantidad);
-      this.guardarCarrito();
-    }
-  },
-
   vaciarCarrito() {
     this.carrito = [];
     localStorage.removeItem('carrito');
@@ -167,7 +158,7 @@ const catalogo = {
   },
 
   get linkWhatsapp() {
-    if (this.carrito.length === 0) return '';
+    if (!this.carrito.length) return '';
     let mensaje = 'Hola! Quiero pedir estos productos:%0A';
     this.carrito.forEach(p => {
       const subtotal = (p.precio * p.cantidad).toLocaleString();
@@ -175,6 +166,50 @@ const catalogo = {
     });
     mensaje += `%0ATotal: $${this.totalCarrito.toLocaleString()}`;
     return `https://wa.me/5492494621182?text=${mensaje}`;
+  },
+
+  cerrarModal() {
+    this.mostrarModal = false;
+    this.productoSeleccionado = null;
+    this.imagenIndex = 0;
+  },
+
+  // Función para actualizar render modal (puedes adaptar según tu renderizado)
+  renderModal() {
+    const modal = document.querySelector('.modal');
+    if (!modal) return;
+    if (this.mostrarModal && this.productoSeleccionado) {
+      modal.style.display = 'flex';
+
+      // Actualizar imagen
+      const imgEl = modal.querySelector('.modal-img');
+      imgEl.src = this.productoSeleccionado.imagenes[this.imagenIndex];
+
+      // Actualizar texto
+      modal.querySelector('.modal-title').textContent = this.productoSeleccionado.nombre;
+      modal.querySelector('.modal-descripcion').textContent = this.productoSeleccionado.descripcion;
+      modal.querySelector('.modal-precio').textContent = `$${this.productoSeleccionado.precio.toLocaleString()}`;
+
+    } else {
+      modal.style.display = 'none';
+    }
+  },
+
+  activarPantallaCompleta() {
+  const imagen = document.querySelector('.modal-img');
+  if (imagen.requestFullscreen) {
+    imagen.requestFullscreen();
+  } else if (imagen.webkitRequestFullscreen) { // Safari
+    imagen.webkitRequestFullscreen();
+  } else if (imagen.msRequestFullscreen) { // IE11
+    imagen.msRequestFullscreen();
+  }
+},
+
+  // Función de render general que deberías tener (o adaptarla según cómo renderices)
+  render() {
+    this.renderModal();
+    // Aquí llamás la renderización del catálogo, carrito, etc.
   }
 };
 
