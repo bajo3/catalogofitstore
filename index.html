@@ -53,16 +53,19 @@
   <main class="catalogo">
     <div class="grid-productos">
       <template x-for="(producto, index) in productosFiltrados" :key="index">
-        <div class="card-producto" @click="seleccionarProducto(producto)">
-          <div class="img-container relative">
-            <img :src="producto.imagenes[0]" :alt="producto.nombre" class="img-producto" />
+        <div class="card-producto">
+          <div class="img-container relative" x-data="{ hover: false }" @mouseenter="hover = true"
+            @mouseleave="hover = false" @click="seleccionarProducto(producto)">
+            <img :src="hover && producto.imagenes[1] ? producto.imagenes[1] : producto.imagenes[0]"
+              :alt="producto.nombre" class="img-producto transition-all duration-300 ease-in-out" />
             <span x-show="producto.etiqueta" class="badge-etiqueta" :class="{
-                  'bg-orange-500': producto.etiqueta === 'OFERTA',
-                  'bg-red-500': producto.etiqueta === 'REBAJA',
-                  'bg-green-500': producto.etiqueta === 'NUEVO',
-                  'bg-blue-500': producto.etiqueta === 'PROMO',
-                }" x-text="producto.etiqueta"></span>
+              'bg-orange-500': producto.etiqueta === 'OFERTA',
+              'bg-red-500': producto.etiqueta === 'REBAJA',
+              'bg-green-500': producto.etiqueta === 'NUEVO',
+              'bg-blue-500': producto.etiqueta === 'PROMO',
+            }" x-text="producto.etiqueta"></span>
           </div>
+
           <div class="card-body">
             <h2 class="titulo-producto" x-text="producto.nombre"></h2>
             <p class="descripcion-producto" x-text="producto.descripcion"></p>
@@ -74,49 +77,48 @@
     </div>
   </main>
 
-  <!-- MODAL con CARRUSEL -->
-  <div x-show="mostrarModal" class="modal" @click.away="cerrarModal()" x-cloak>
-    <div class="modal-content">
 
-      <!-- Contenido con scroll -->
-      <div class="modal-scrollable">
-        <h2 class="modal-title" x-text="productoSeleccionado.nombre"></h2>
+  <!-- MODAL MEJORADO -->
+<div 
+x-show="mostrarModal" 
+@click.away="cerrarModal()" 
+@keydown.escape.window="cerrarModal()" 
+class="modal" 
+x-cloak
+@keydown.right.window="siguienteImagen()" 
+@keydown.left.window="anteriorImagen()"
+>
+<div class="modal-content relative flex flex-col items-center justify-center gap-4">
+  
+  <!-- Nombre producto -->
+  <h2 class="text-lg font-bold text-center" x-text="productoSeleccionado?.nombre"></h2>
 
-       <!-- Carrusel de Imágenes -->
-<div class="relative w-full max-w-[250px] mx-auto">
-  <img 
-    :src="productoSeleccionado.imagenes[imagenIndex]" 
-    class="modal-img cursor-zoom-in" 
-    @click="activarPantallaCompleta()" 
-    alt="Imagen producto"
-  />
-  <div class="absolute inset-0 flex justify-between items-center px-2 pointer-events-none">
-    <button 
-      @click.stop="anteriorImagen()" 
-      class="text-2xl text-gray-600 hover:text-black pointer-events-auto"
-      aria-label="Imagen anterior"
-    >←</button>
-    <button 
-      @click.stop="siguienteImagen()" 
-      class="text-2xl text-gray-600 hover:text-black pointer-events-auto"
-      aria-label="Imagen siguiente"
-    >→</button>
+  <!-- Imagen principal -->
+  <div class="relative w-full h-full flex justify-center items-center">
+    <img 
+      :src="productoSeleccionado.imagenes[imagenIndex]" 
+      alt="Imagen producto"
+      class="modal-img cursor-zoom-in transition-transform duration-300 ease-in-out"
+      @click="activarPantallaCompleta()"
+    />
+
+    <!-- Flechas -->
+      <div class="modal-flechas">
+    <button @click="anteriorImagen()" class="modal-flecha-btn">←</button>
+    <button @click="siguienteImagen()" class="modal-flecha-btn">→</button>
+  </div>
+  </div>
+
+  <!-- Indicador y cerrar -->
+  <div class="flex justify-between items-center w-full px-2 pt-2 modal-botones">
+    <span class="text-sm text-gray-500" x-text="`${imagenIndex + 1} / ${productoSeleccionado.imagenes.length}`"></span>
+    <button @click="cerrarModal()" class="modal-btn-cerrar">Cerrar</button>
   </div>
 </div>
-
-<p class="modal-descripcion" x-text="productoSeleccionado.descripcion"></p>
-<p class="modal-precio" x-text="`$${productoSeleccionado.precio.toLocaleString()}`"></p>
+</div>
 
 
-      <!-- Botones fijos abajo -->
-      <div class="modal-botones">
-        <button @click="agregarAlCarrito(productoSeleccionado)" class="modal-btn-agregar">Añadir al carrito</button>
-        <button @click="cerrarModal()" class="modal-btn-cerrar">Cerrar</button>
-      </div>
-
-    </div>
-  </div>
-
+<!-- Carrito-->
 
   <section class="carrito" x-show="carrito.length" x-cloak>
     <h3 class="carrito-titulo">🛒 Carrito</h3>
@@ -157,6 +159,24 @@
     </div>
     <p class="footer-copy">© 2025 Tandi.Fit.Store — Todos los derechos reservados</p>
   </footer>
+
+  <!-- Modal Galería Pantalla Completa -->
+  <div x-show="mostrarGaleria" @keydown.escape.window="cerrarGaleria()"
+    class="fixed inset-0 bg-black bg-opacity-90 z-[9999] flex items-center justify-center px-4" x-cloak>
+    <div class="relative max-w-screen-sm w-full flex flex-col items-center">
+      <img :src="productoSeleccionado.imagenes[imagenIndex]" class="w-full object-contain rounded-lg"
+        alt="Imagen grande" />
+
+      <div class="mt-4 flex justify-center gap-4">
+        <button @click="anteriorImagen()" class="text-white text-3xl">←</button>
+        <button @click="siguienteImagen()" class="text-white text-3xl">→</button>
+      </div>
+
+      <button @click="cerrarGaleria()"
+        class="absolute top-4 right-4 text-white text-2xl bg-red-600 rounded-full px-3 py-1">✕</button>
+    </div>
+  </div>
+
 
   <script src="app.js"></script>
 </body>

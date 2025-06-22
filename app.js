@@ -2,6 +2,7 @@ const catalogo = {
   busqueda: '',
   filtroCategoria: '',
   mostrarModal: false,
+  mostrarGaleria: false,
   productoSeleccionado: null,
   imagenIndex: 0,
   carrito: [],
@@ -30,7 +31,6 @@ const catalogo = {
       categoria: 'Colágeno',
       etiqueta: 'OFERTA'
     }
-    // ... otros productos
   ],
 
   async cargarDesdeCSV() {
@@ -70,29 +70,10 @@ const catalogo = {
     if (guardado) this.carrito = JSON.parse(guardado);
 
     this.cargarDesdeCSV();
-    this.iniciarParticulas?.();
 
-    // Agregar listeners para cerrar modal y controlar carrusel
-    document.addEventListener('click', (e) => {
-      if (e.target.matches('.modal-btn-cerrar')) {
-        this.cerrarModal();
-        this.render();
-      }
-      if (e.target.matches('.modal-btn-agregar')) {
-        if (this.productoSeleccionado) {
-          this.agregarAlCarrito(this.productoSeleccionado);
-          this.cerrarModal();
-          this.render();
-        }
-      }
-      if (e.target.matches('.modal-prev')) {
-        this.anteriorImagen();
-        this.renderModal();
-      }
-      if (e.target.matches('.modal-next')) {
-        this.siguienteImagen();
-        this.renderModal();
-      }
+    // ESC para cerrar galería
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape') this.cerrarGaleria();
     });
   },
 
@@ -116,7 +97,14 @@ const catalogo = {
     this.productoSeleccionado = producto;
     this.imagenIndex = 0;
     this.mostrarModal = true;
-    this.renderModal();
+  },
+
+  abrirGaleria() {
+    this.mostrarGaleria = true;
+  },
+
+  cerrarGaleria() {
+    this.mostrarGaleria = false;
   },
 
   siguienteImagen() {
@@ -174,42 +162,19 @@ const catalogo = {
     this.imagenIndex = 0;
   },
 
-  // Función para actualizar render modal (puedes adaptar según tu renderizado)
-  renderModal() {
-    const modal = document.querySelector('.modal');
-    if (!modal) return;
-    if (this.mostrarModal && this.productoSeleccionado) {
-      modal.style.display = 'flex';
-
-      // Actualizar imagen
-      const imgEl = modal.querySelector('.modal-img');
-      imgEl.src = this.productoSeleccionado.imagenes[this.imagenIndex];
-
-      // Actualizar texto
-      modal.querySelector('.modal-title').textContent = this.productoSeleccionado.nombre;
-      modal.querySelector('.modal-descripcion').textContent = this.productoSeleccionado.descripcion;
-      modal.querySelector('.modal-precio').textContent = `$${this.productoSeleccionado.precio.toLocaleString()}`;
-
-    } else {
-      modal.style.display = 'none';
+  activarPantallaCompleta() {
+    const imagen = document.querySelector('.modal-img');
+    if (imagen.requestFullscreen) {
+      imagen.requestFullscreen();
+    } else if (imagen.webkitRequestFullscreen) {
+      imagen.webkitRequestFullscreen();
+    } else if (imagen.msRequestFullscreen) {
+      imagen.msRequestFullscreen();
     }
   },
 
-  activarPantallaCompleta() {
-  const imagen = document.querySelector('.modal-img');
-  if (imagen.requestFullscreen) {
-    imagen.requestFullscreen();
-  } else if (imagen.webkitRequestFullscreen) { // Safari
-    imagen.webkitRequestFullscreen();
-  } else if (imagen.msRequestFullscreen) { // IE11
-    imagen.msRequestFullscreen();
-  }
-},
-
-  // Función de render general que deberías tener (o adaptarla según cómo renderices)
   render() {
     this.renderModal();
-    // Aquí llamás la renderización del catálogo, carrito, etc.
   }
 };
 
