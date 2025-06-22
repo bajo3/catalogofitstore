@@ -162,16 +162,7 @@ const catalogo = {
     this.imagenIndex = 0;
   },
 
-  activarPantallaCompleta() {
-    const imagen = document.querySelector('.modal-img');
-    if (imagen.requestFullscreen) {
-      imagen.requestFullscreen();
-    } else if (imagen.webkitRequestFullscreen) {
-      imagen.webkitRequestFullscreen();
-    } else if (imagen.msRequestFullscreen) {
-      imagen.msRequestFullscreen();
-    }
-  },
+
 
   render() {
     this.renderModal();
