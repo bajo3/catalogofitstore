@@ -9,6 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
+  <link rel="icon" href="logo1.png" type="image/png" />
 </head>
 
 <body x-data="catalogo" class="bg-white text-gray-900">
@@ -39,6 +40,19 @@
       </div>
     </div>
   </header>
+  <section class="combo-section">
+    <h2 class="combo-title">💪 COMBOS según tu objetivo</h2>
+    <div class="combo-buttons">
+      <button @click="aplicarFiltro('AUMENTO', 'PROMO')">
+        AUMENTO MUSCULAR
+      </button>
+      <button @click="filtroCategoria = 'COMBOS'; filtroEtiqueta = 'DEFINICION'; busqueda = ''">DEFINICIÓN
+        MUSCULAR</button>
+      <button @click="filtroCategoria = 'COMBOS'; filtroEtiqueta = 'ENERGIA'; busqueda = ''">ENERGÍA Y
+        BIENESTAR</button>
+      <button @click="filtroCategoria = 'COMBOS'; filtroEtiqueta = 'DESCENSO'; busqueda = ''">DESCENSO DE PESO</button>
+    </div>
+  </section>
 
   <section class="filter-section">
     <input type="text" placeholder="Buscar producto..." class="search-input" x-model="busqueda" />
@@ -79,45 +93,40 @@
 
 
   <!-- MODAL MEJORADO -->
-<div 
-x-show="mostrarModal" 
-@click.away="cerrarModal()" 
-@keydown.escape.window="cerrarModal()" 
-class="modal" 
-x-cloak
-@keydown.right.window="siguienteImagen()" 
-@keydown.left.window="anteriorImagen()"
->
-<div class="modal-content relative flex flex-col items-center justify-center gap-4">
-  
-  <!-- Nombre producto -->
-  <h2 class="text-lg font-bold text-center" x-text="productoSeleccionado?.nombre"></h2>
+  <div x-show="mostrarModal" @click.away="cerrarModal()" @keydown.escape.window="cerrarModal()" class="modal" x-cloak
+    @keydown.right.window="siguienteImagen()" @keydown.left.window="anteriorImagen()">
+    <template x-if="productoSeleccionado">
+      <div class="modal-content relative flex flex-col items-center justify-center gap-4">
 
-  <!-- Imagen principal -->
-  <div class="relative w-full h-full flex justify-center items-center">
-    <img 
-      :src="productoSeleccionado.imagenes[imagenIndex]" 
-      alt="Imagen producto"
-      class="modal-img cursor-zoom-in transition-transform duration-300 ease-in-out"
-    />
+        <!-- Nombre producto -->
+        <h2 class="text-lg font-bold text-center" x-text="productoSeleccionado.nombre"></h2>
 
-    <!-- Flechas -->
-      <div class="modal-flechas">
-    <button @click="anteriorImagen()" class="modal-flecha-btn">←</button>
-    <button @click="siguienteImagen()" class="modal-flecha-btn">→</button>
+        <!-- Imagen principal -->
+        <div class="relative w-full h-full flex justify-center items-center">
+          <img :src="productoSeleccionado.imagenes[imagenIndex]" alt="Imagen producto"
+            class="modal-img cursor-zoom-in transition-transform duration-300 ease-in-out" />
+
+          <!-- Flechas -->
+          <div class="modal-flechas">
+            <button @click="anteriorImagen()" class="modal-flecha-btn">←</button>
+            <button @click="siguienteImagen()" class="modal-flecha-btn">→</button>
+          </div>
+        </div>
+
+        <!-- Indicador y cerrar -->
+        <div class="flex justify-between items-center w-full px-2 pt-2 modal-botones">
+          <span class="text-sm text-gray-500"
+            x-text="`${imagenIndex + 1} / ${productoSeleccionado.imagenes.length}`"></span>
+          <button @click="cerrarModal()" class="modal-btn-cerrar">Cerrar</button>
+        </div>
+      </div>
+    </template>
   </div>
-  </div>
-
-  <!-- Indicador y cerrar -->
-  <div class="flex justify-between items-center w-full px-2 pt-2 modal-botones">
-    <span class="text-sm text-gray-500" x-text="`${imagenIndex + 1} / ${productoSeleccionado.imagenes.length}`"></span>
-    <button @click="cerrarModal()" class="modal-btn-cerrar">Cerrar</button>
-  </div>
-</div>
-</div>
 
 
-<!-- Carrito-->
+
+
+  <!-- Carrito-->
 
   <section class="carrito" x-show="carrito.length" x-cloak>
     <h3 class="carrito-titulo">🛒 Carrito</h3>
@@ -162,19 +171,24 @@ x-cloak
   <!-- Modal Galería Pantalla Completa -->
   <div x-show="mostrarGaleria" @keydown.escape.window="cerrarGaleria()"
     class="fixed inset-0 bg-black bg-opacity-90 z-[9999] flex items-center justify-center px-4" x-cloak>
-    <div class="relative max-w-screen-sm w-full flex flex-col items-center">
-      <img :src="productoSeleccionado.imagenes[imagenIndex]" class="w-full object-contain rounded-lg"
-        alt="Imagen grande" />
+    <template x-if="productoSeleccionado">
+      <div class="relative max-w-screen-sm w-full flex flex-col items-center">
+        <img :src="productoSeleccionado.imagenes[imagenIndex]" class="w-full object-contain rounded-lg"
+          alt="Imagen grande" />
 
-      <div class="mt-4 flex justify-center gap-4">
-        <button @click="anteriorImagen()" class="text-white text-3xl">←</button>
-        <button @click="siguienteImagen()" class="text-white text-3xl">→</button>
+        <div class="mt-4 flex justify-center gap-4">
+          <button @click="anteriorImagen()" class="text-white text-3xl">←</button>
+          <button @click="siguienteImagen()" class="text-white text-3xl">→</button>
+        </div>
+
+        <button @click="cerrarGaleria()"
+          class="absolute top-4 right-4 text-white text-2xl bg-red-600 rounded-full px-3 py-1">
+          ✕
+        </button>
       </div>
-
-      <button @click="cerrarGaleria()"
-        class="absolute top-4 right-4 text-white text-2xl bg-red-600 rounded-full px-3 py-1">✕</button>
-    </div>
+    </template>
   </div>
+
 
 
   <script src="app.js"></script>

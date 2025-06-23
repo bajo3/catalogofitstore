@@ -1,37 +1,13 @@
 const catalogo = {
   busqueda: '',
   filtroCategoria: '',
+  filtroEtiqueta: '',
   mostrarModal: false,
   mostrarGaleria: false,
   productoSeleccionado: null,
   imagenIndex: 0,
   carrito: [],
   productos: [],
-
-  productosLocal: [
-    {
-      nombre: 'Creatina x300g',
-      descripcion: 'Mejora la fuerza, potencia y recuperación muscular.',
-      precio: 29000,
-      imagenes: [
-        '../Productos/Creatina.jpg',
-        '../Productos/Nutricional_Creatina.jpg'
-      ],
-      categoria: 'Creatina',
-      etiqueta: 'NUEVO'
-    },
-    {
-      nombre: 'Colágeno Plus x360g',
-      descripcion: 'Favorece articulaciones, piel y cabello.',
-      precio: 20000,
-      imagenes: [
-        '../Productos/Colageno.jpg',
-        '../Productos/Nutricional_Colageno.jpg'
-      ],
-      categoria: 'Colágeno',
-      etiqueta: 'OFERTA'
-    }
-  ],
 
   async cargarDesdeCSV() {
     try {
@@ -52,7 +28,7 @@ const catalogo = {
           descripcion: p.descripcion?.trim() || "",
           precio: parseInt(p.precio),
           imagenes: [p.imagen.trim(), ...(p.nutricional ? [p.nutricional.trim()] : [])],
-          categoria: p.categoria?.trim() || "Sin categoría",
+          categoria: p.categoria?.trim().toUpperCase() || "SIN CATEGORÍA",
           etiqueta: p.etiqueta?.trim().toUpperCase() || ""
         }));
 
@@ -60,9 +36,15 @@ const catalogo = {
 
       this.productos = productosValidos;
     } catch (error) {
-      console.warn("Error al cargar CSV, usando productos locales.", error);
-      this.productos = this.productosLocal;
+      console.warn("Error al cargar CSV. No se encontraron productos.", error);
+      this.productos = [];
     }
+  },
+
+  aplicarFiltro(cat, etiq) {
+    this.filtroCategoria = cat;
+    this.filtroEtiqueta = etiq;
+    this.busqueda = '';
   },
 
   init() {
@@ -71,7 +53,6 @@ const catalogo = {
 
     this.cargarDesdeCSV();
 
-    // ESC para cerrar galería
     window.addEventListener('keydown', e => {
       if (e.key === 'Escape') this.cerrarGaleria();
     });
@@ -83,14 +64,17 @@ const catalogo = {
 
   get productosFiltrados() {
     const texto = this.busqueda.toLowerCase();
-    return this.productos.filter(p =>
-      (!this.filtroCategoria || p.categoria === this.filtroCategoria) &&
-      (
-        p.nombre.toLowerCase().includes(texto) ||
-        p.descripcion.toLowerCase().includes(texto) ||
-        p.categoria.toLowerCase().includes(texto)
-      )
-    );
+    const catFiltro = (this.filtroCategoria || '').toUpperCase();
+    const etiquetaFiltro = (this.filtroEtiqueta || '').toUpperCase();
+
+    return this.productos.filter(p => {
+      const enCategoria = catFiltro ? p.categoria.includes(catFiltro) : true;
+      const enEtiqueta = etiquetaFiltro ? (p.etiqueta || '').includes(etiquetaFiltro) : true;
+      const enTexto = p.nombre.toLowerCase().includes(texto) ||
+                      p.descripcion.toLowerCase().includes(texto) ||
+                      p.categoria.toLowerCase().includes(texto);
+      return enCategoria && enEtiqueta && enTexto;
+    });
   },
 
   seleccionarProducto(producto) {
@@ -161,8 +145,6 @@ const catalogo = {
     this.productoSeleccionado = null;
     this.imagenIndex = 0;
   },
-
-
 
   render() {
     this.renderModal();
