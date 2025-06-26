@@ -228,34 +228,50 @@
     </div>
   </template>
 </div>
-  <!-- Carrito-->
-  <section class="carrito" x-show="carrito.length" x-cloak>
-  <h3 class="carrito-titulo">🛒 Carrito</h3>
-  <ul class="carrito-lista">
-    <template x-for="item in carrito" :key="item.nombre">
-      <li class="carrito-item flex justify-between items-center py-2 border-b border-gray-200">
-        <span x-text="`${item.nombre} (x${item.cantidad})`" class="font-medium"></span>
-        <div class="carrito-controles flex gap-2">
-          <button @click="item.cantidad++" class="btn-control">➕</button>
-          <button @click="item.cantidad > 1 ? item.cantidad-- : quitarDelCarrito(item)" class="btn-control">➖</button>
-          <button @click="quitarDelCarrito(item)" class="btn-control text-red-600">🗑️</button>
-        </div>
-      </li>
-    </template>
-  </ul>
-  <p class="carrito-total mt-4 font-semibold text-lg">
-    Total: $<span x-text="totalCarrito.toLocaleString()"></span>
-  </p>
-  <div class="carrito-acciones mt-4 flex gap-4">
-    <a :href="linkWhatsapp" target="_blank" class="btn-enviar bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
-      Enviar pedido
-    </a>
-    <button class="btn-vaciar bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition" @click="vaciarCarrito">
-      Vaciar
-    </button>
+<section
+  class="carrito"
+  x-data="{ abierto: false }"
+  x-show="carrito.length"
+  x-cloak
+  :class="abierto ? 'carrito-abierto' : 'carrito-cerrado'"
+>
+  <!-- Barra superior del carrito -->
+ <div class="carrito-barra" @click="abierto = !abierto">
+  <span class="carrito-titulo">
+    🛒 Carrito (Total: $<span x-text="totalCarrito.toLocaleString()"></span>)
+  </span>
+  <div class="carrito-toggle">
+    <span x-text="abierto ? 'Ocultar carrito' : 'Ver carrito'"></span>
+    <svg xmlns="http://www.w3.org/2000/svg" class="carrito-flecha"
+         :class="abierto ? 'flecha-abierta' : ''"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+</div>
+
+
+  <!-- Contenido desplegable -->
+  <div x-show="abierto" x-transition class="carrito-contenido pt-4">
+    <ul class="carrito-lista">
+      <template x-for="item in carrito" :key="item.nombre">
+        <li class="carrito-item">
+          <span x-text="`${item.nombre} (x${item.cantidad})`"></span>
+          <div class="carrito-controles">
+            <button @click="item.cantidad++">➕</button>
+            <button @click="item.cantidad > 1 ? item.cantidad-- : quitarDelCarrito(item)">➖</button>
+            <button @click="quitarDelCarrito(item)" class="text-red-600">🗑️</button>
+          </div>
+        </li>
+      </template>
+    </ul>
+
+    <div class="carrito-acciones">
+      <a :href="linkWhatsapp" target="_blank" class="btn-enviar">Enviar pedido</a>
+      <button class="btn-vaciar" @click="vaciarCarrito">Vaciar</button>
+    </div>
   </div>
 </section>
-
 
   <footer class="footer">
     <div class="footer-container">
