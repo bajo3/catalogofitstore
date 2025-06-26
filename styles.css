@@ -262,7 +262,7 @@ body {
 
 .grid-productos {
   display: grid;
-  grid-template-columns: repeat(4, 24%);
+  grid-template-columns: repeat(4, 20%);
   gap: 1%;
   justify-content: space-between;
 }

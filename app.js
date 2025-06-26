@@ -47,6 +47,14 @@ const catalogo = {
     this.busqueda = '';
   },
 
+
+  aplicarFiltroCategoria(cat) {
+    this.filtroCategoria = cat;   // activo solo esa categoría
+    this.filtroEtiqueta = '';    // limpio la etiqueta (si hubiera)
+    this.busqueda = '';   // limpio el texto de búsqueda
+  },
+
+
   init() {
     const guardado = localStorage.getItem('carrito');
     if (guardado) this.carrito = JSON.parse(guardado);
@@ -68,11 +76,11 @@ const catalogo = {
     const etiquetaFiltro = (this.filtroEtiqueta || '').toUpperCase();
 
     return this.productos.filter(p => {
-      const enCategoria = catFiltro ? p.categoria.includes(catFiltro) : true;
+      const enCategoria = catFiltro ? p.categoria.toUpperCase().includes(catFiltro) : true;
       const enEtiqueta = etiquetaFiltro ? (p.etiqueta || '').includes(etiquetaFiltro) : true;
       const enTexto = p.nombre.toLowerCase().includes(texto) ||
-                      p.descripcion.toLowerCase().includes(texto) ||
-                      p.categoria.toLowerCase().includes(texto);
+        p.descripcion.toLowerCase().includes(texto) ||
+        p.categoria.toLowerCase().includes(texto);
       return enCategoria && enEtiqueta && enTexto;
     });
   },
