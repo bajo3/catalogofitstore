@@ -40,30 +40,30 @@
       </div>
     </div>
   </header>
-<section class="combo-section">
-  <h2 class="combo-title">💪 COMBOS según tu objetivo</h2>
-  <div class="combo-buttons">
-    <button @click="aplicarFiltroCategoria('AUMENTO')">AUMENTO MUSCULAR</button>
-    <button @click="aplicarFiltroCategoria('DEFINICION')">DEFINICIÓN MUSCULAR</button>
-    <button @click="aplicarFiltroCategoria('ENERGIA')">ENERGÍA Y BIENESTAR</button>
-  </div>
-</section>
 
-
-  <section class="filter-section">
-    <input type="text" placeholder="Buscar producto..." class="search-input" x-model="busqueda" />
-    <select class="select-category" x-model="filtroCategoria">
-      <option value="">Todas las categorías</option>
-      <template x-for="categoria in categorias" :key="categoria">
-        <option x-text="categoria"></option>
-      </template>
-    </select>
+  <section class="combo-section">
+    <h2 class="combo-title">💪 COMBOS según tu objetivo</h2>
+    <div class="combo-buttons">
+      <button @click="aplicarFiltroCategoria('AUMENTO')">AUMENTO MUSCULAR</button>
+      <button @click="aplicarFiltroCategoria('DEFINICION')">DEFINICIÓN MUSCULAR</button>
+      <button @click="aplicarFiltroCategoria('ENERGIA')">ENERGÍA Y BIENESTAR</button>
+    </div>
   </section>
 
   <main class="catalogo">
     <div class="grid-productos">
       <template x-for="(producto, index) in productosFiltrados" :key="index">
-        <div class="card-producto cursor-pointer" @click="seleccionarProducto(producto)">
+        <div class="card-producto cursor-pointer" x-data="{
+          showLeerMas: false,
+          init() {
+            this.$nextTick(() => {
+              const desc = this.$refs.descripcion;
+              if (desc.scrollHeight > desc.clientHeight) {
+                this.showLeerMas = true;
+              }
+            });
+          }
+        }" x-init="init()">
           <div class="img-container relative" x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false">
             <img
               :src="hover && producto.imagenes[1] ? producto.imagenes[1] : producto.imagenes[0]"
@@ -85,7 +85,21 @@
 
           <div class="card-body">
             <h2 class="titulo-producto" x-text="producto.nombre"></h2>
-            <p class="descripcion-producto" x-text="producto.descripcion"></p>
+
+            <p
+              x-ref="descripcion"
+              class="descripcion-producto line-clamp-2"
+              x-text="producto.descripcion">
+            </p>
+
+            <button
+              x-show="showLeerMas"
+              @click.stop="seleccionarProducto(producto)"
+              class="leer-mas-btn text-sm text-green-600 hover:underline mt-1"
+            >
+              Leer más
+            </button>
+
             <p class="precio-producto" x-text="`$${producto.precio.toLocaleString()}`"></p>
             <button @click.stop="agregarAlCarrito(producto)" class="btn-agregar">Añadir al carrito</button>
           </div>
@@ -93,78 +107,155 @@
       </template>
     </div>
   </main>
+  
 
 
-          <div class="card-body">
-            <h2 class="titulo-producto" x-text="producto.nombre"></h2>
-            <p class="descripcion-producto" x-text="producto.descripcion"></p>
-            <p class="precio-producto" x-text="`$${producto.precio.toLocaleString()}`"></p>
-            <button @click.stop="agregarAlCarrito(producto)" class="btn-agregar">Añadir al carrito</button>
-          </div>
-        </div>
+  <section class="filter-section">
+    <input type="text" placeholder="Buscar producto..." class="search-input" x-model="busqueda" />
+    <select class="select-category" x-model="filtroCategoria">
+      <option value="">Todas las categorías</option>
+      <template x-for="categoria in categorias" :key="categoria">
+        <option x-text="categoria"></option>
       </template>
-    </div>
-  </main>
+    </select>
+  </section>
 
-
-  <!-- MODAL MEJORADO -->
-  <div x-show="mostrarModal" @click.away="cerrarModal()" @keydown.escape.window="cerrarModal()" class="modal" x-cloak
-    @keydown.right.window="siguienteImagen()" @keydown.left.window="anteriorImagen()">
-    <template x-if="productoSeleccionado">
-      <div class="modal-content relative flex flex-col items-center justify-center gap-4">
-
-        <!-- Nombre producto -->
-        <h2 class="text-lg font-bold text-center" x-text="productoSeleccionado.nombre"></h2>
-
-        <!-- Imagen principal -->
-        <div class="relative w-full h-full flex justify-center items-center">
-          <img :src="productoSeleccionado.imagenes[imagenIndex]" alt="Imagen producto"
-            class="modal-img cursor-zoom-in transition-transform duration-300 ease-in-out" />
-
-          <!-- Flechas -->
-          <div class="modal-flechas">
-            <button @click="anteriorImagen()" class="modal-flecha-btn">←</button>
-            <button @click="siguienteImagen()" class="modal-flecha-btn">→</button>
-          </div>
+ <main class="catalogo">
+  <div class="grid-productos">
+    <template x-for="(producto, index) in productosFiltrados" :key="index">
+      <div
+        class="card-producto cursor-pointer"
+        @click="seleccionarProducto(producto)"
+      >
+        <div
+          class="img-container relative"
+          x-data="{ hover: false }"
+          @mouseenter="hover = true"
+          @mouseleave="hover = false"
+        >
+          <img
+            :src="hover && producto.imagenes[1] ? producto.imagenes[1] : producto.imagenes[0]"
+            :alt="producto.nombre"
+            class="img-producto transition-all duration-300 ease-in-out"
+          />
+          <span
+            x-show="producto.etiqueta"
+            class="badge-etiqueta"
+            :class="{
+              'bg-orange-500': producto.etiqueta === 'OFERTA',
+              'bg-red-500': producto.etiqueta === 'REBAJA',
+              'bg-green-500': producto.etiqueta === 'NUEVO',
+              'bg-blue-500': producto.etiqueta === 'PROMO',
+            }"
+            x-text="producto.etiqueta"
+          ></span>
         </div>
 
-        <!-- Indicador y cerrar -->
-        <div class="flex justify-between items-center w-full px-2 pt-2 modal-botones">
-          <span class="text-sm text-gray-500"
-            x-text="`${imagenIndex + 1} / ${productoSeleccionado.imagenes.length}`"></span>
-          <button @click="cerrarModal()" class="modal-btn-cerrar">Cerrar</button>
+        <div class="card-body">
+          <h2 class="titulo-producto" x-text="producto.nombre"></h2>
+          <p
+            class="descripcion-producto text-sm text-gray-600 line-clamp-2"
+            x-text="producto.descripcion"
+            x-ref="desc"
+          ></p>
+
+          <!-- Mostrar "Leer más" si descripción es larga -->
+          <template x-if="producto.descripcion.length > 100">
+            <button
+              @click.stop="seleccionarProducto(producto)"
+              class="text-green-600 text-sm mt-1 hover:underline"
+              type="button"
+            >
+              Leer más
+            </button>
+          </template>
+
+          <p class="precio-producto" x-text="`$${producto.precio.toLocaleString()}`"></p>
+          <button
+            @click.stop="agregarAlCarrito(producto)"
+            class="btn-agregar"
+          >
+            Añadir al carrito
+          </button>
         </div>
       </div>
     </template>
   </div>
+</main>
+  
 
 
+ <!-- MODAL MEJORADO -->
+<div x-show="mostrarModal" @click.away="cerrarModal()" @keydown.escape.window="cerrarModal()"
+  class="modal" x-cloak
+  @keydown.right.window="siguienteImagen()"
+  @keydown.left.window="anteriorImagen()">
+  
+  <template x-if="productoSeleccionado">
+    <div class="modal-content relative flex flex-col items-center justify-center gap-4 overflow-y-auto">
 
+      <!-- Botón X (cierre en esquina superior derecha) -->
+      <button @click="cerrarModal()"
+        class="absolute top-3 right-3 text-gray-500 hover:text-red-500 text-2xl font-bold z-50">
+        ✕
+      </button>
 
-  <!-- Carrito-->
+      <!-- Nombre producto -->
+      <h2 class="text-lg font-bold text-center" x-text="productoSeleccionado.nombre"></h2>
 
-  <section class="carrito" x-show="carrito.length" x-cloak>
-    <h3 class="carrito-titulo">🛒 Carrito</h3>
-    <ul class="carrito-lista">
-      <template x-for="item in carrito" :key="item.nombre">
-        <li class="carrito-item">
-          <span x-text="`${item.nombre} (x${item.cantidad})`"></span>
-          <div class="carrito-controles">
-            <button @click="item.cantidad++">➕</button>
-            <button @click="item.cantidad > 1 ? item.cantidad-- : quitarDelCarrito(item)">➖</button>
-            <button @click="quitarDelCarrito(item)">🗑️</button>
-          </div>
-        </li>
-      </template>
-    </ul>
-    <p class="carrito-total">
-      Total: $<span x-text="totalCarrito.toLocaleString()"></span>
-    </p>
-    <div class="carrito-acciones">
-      <a :href="linkWhatsapp" target="_blank" class="btn-enviar">Enviar pedido</a>
-      <button class="btn-vaciar" @click="vaciarCarrito">Vaciar</button>
+      <!-- Descripción -->
+      <p class="text-sm text-center text-gray-700 max-w-md px-4" x-text="productoSeleccionado.descripcion"></p>
+
+      <!-- Imagen principal -->
+      <div class="relative w-full h-full flex justify-center items-center">
+        <img :src="productoSeleccionado.imagenes[imagenIndex]" alt="Imagen producto"
+          class="modal-img cursor-zoom-in transition-transform duration-300 ease-in-out" />
+
+        <!-- Flechas -->
+        <div class="modal-flechas">
+          <button @click="anteriorImagen()" class="modal-flecha-btn">←</button>
+          <button @click="siguienteImagen()" class="modal-flecha-btn">→</button>
+        </div>
+      </div>
+
+      <!-- Indicador y botón cerrar -->
+      <div class="flex justify-between items-center w-full px-2 pt-2 modal-botones">
+        <span class="text-sm text-gray-500"
+          x-text="`${imagenIndex + 1} / ${productoSeleccionado.imagenes.length}`"></span>
+        <button @click="cerrarModal()" class="modal-btn-cerrar">Cerrar</button>
+      </div>
+
     </div>
-  </section>
+  </template>
+</div>
+  <!-- Carrito-->
+  <section class="carrito" x-show="carrito.length" x-cloak>
+  <h3 class="carrito-titulo">🛒 Carrito</h3>
+  <ul class="carrito-lista">
+    <template x-for="item in carrito" :key="item.nombre">
+      <li class="carrito-item flex justify-between items-center py-2 border-b border-gray-200">
+        <span x-text="`${item.nombre} (x${item.cantidad})`" class="font-medium"></span>
+        <div class="carrito-controles flex gap-2">
+          <button @click="item.cantidad++" class="btn-control">➕</button>
+          <button @click="item.cantidad > 1 ? item.cantidad-- : quitarDelCarrito(item)" class="btn-control">➖</button>
+          <button @click="quitarDelCarrito(item)" class="btn-control text-red-600">🗑️</button>
+        </div>
+      </li>
+    </template>
+  </ul>
+  <p class="carrito-total mt-4 font-semibold text-lg">
+    Total: $<span x-text="totalCarrito.toLocaleString()"></span>
+  </p>
+  <div class="carrito-acciones mt-4 flex gap-4">
+    <a :href="linkWhatsapp" target="_blank" class="btn-enviar bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+      Enviar pedido
+    </a>
+    <button class="btn-vaciar bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition" @click="vaciarCarrito">
+      Vaciar
+    </button>
+  </div>
+</section>
+
 
   <footer class="footer">
     <div class="footer-container">
