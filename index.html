@@ -50,67 +50,7 @@
     </div>
   </section>
 
-  <main class="catalogo">
-    <div class="grid-productos">
-      <template x-for="(producto, index) in productosFiltrados" :key="index">
-        <div class="card-producto cursor-pointer" x-data="{
-          showLeerMas: false,
-          init() {
-            this.$nextTick(() => {
-              const desc = this.$refs.descripcion;
-              if (desc.scrollHeight > desc.clientHeight) {
-                this.showLeerMas = true;
-              }
-            });
-          }
-        }" x-init="init()">
-          <div class="img-container relative" x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false">
-            <img
-              :src="hover && producto.imagenes[1] ? producto.imagenes[1] : producto.imagenes[0]"
-              :alt="producto.nombre"
-              class="img-producto transition-all duration-300 ease-in-out"
-            />
-            <span
-              x-show="producto.etiqueta"
-              class="badge-etiqueta"
-              :class="{
-                'bg-orange-500': producto.etiqueta === 'OFERTA',
-                'bg-red-500': producto.etiqueta === 'REBAJA',
-                'bg-green-500': producto.etiqueta === 'NUEVO',
-                'bg-blue-500': producto.etiqueta === 'PROMO',
-              }"
-              x-text="producto.etiqueta">
-            </span>
-          </div>
-
-          <div class="card-body">
-            <h2 class="titulo-producto" x-text="producto.nombre"></h2>
-
-            <p
-              x-ref="descripcion"
-              class="descripcion-producto line-clamp-2"
-              x-text="producto.descripcion">
-            </p>
-
-            <button
-              x-show="showLeerMas"
-              @click.stop="seleccionarProducto(producto)"
-              class="leer-mas-btn text-sm text-green-600 hover:underline mt-1"
-            >
-              Leer más
-            </button>
-
-            <p class="precio-producto" x-text="`$${producto.precio.toLocaleString()}`"></p>
-            <button @click.stop="agregarAlCarrito(producto)" class="btn-agregar">Añadir al carrito</button>
-          </div>
-        </div>
-      </template>
-    </div>
-  </main>
-  
-
-
-  <section class="filter-section">
+    <section class="filter-section">
     <input type="text" placeholder="Buscar producto..." class="search-input" x-model="busqueda" />
     <select class="select-category" x-model="filtroCategoria">
       <option value="">Todas las categorías</option>
